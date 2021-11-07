@@ -1,6 +1,7 @@
 
 const staticHtmlParse = require('./staticHtmlParse');
 const apiParse = require('./apiParse');
+const Storage = require('./storage');
 
 var scrapeList = [
 {
@@ -149,6 +150,44 @@ for (var i = 0; i < scrapeList.length; i++) {
 	}
 }
 
-Promise.all(promises)
-.then((values) => console.log(values))
 
+Storage.getMinimumPrices()
+.then(function(result) {
+	// console.log(result.body.aggregations.byItem.buckets)
+	var minPrices = [];
+	var i, bucket;
+	for (i = 0; i < result.body.aggregations.byItem.buckets.length; i++) {
+		bucket = result.body.aggregations.byItem.buckets[i];
+		minPrices[bucket.key] = bucket.minPrice.value * 1.0;
+	}
+
+	console.log('Previous lowest prices:');
+	for (var priceName in minPrices) {
+		console.log('   ' + priceName + ': ' + minPrices[priceName]);
+	}
+	// console.log(minPrices);
+
+	Promise.all(promises)
+	.then(function(values) {
+
+		var cheapDeals = [];
+
+		// console.log(values)
+		for (var resultKey in values) {
+			var result = values[resultKey];
+			if (result !== null) {
+
+				result.price = result.price * 1.0;	// Make sure it's a float
+				Storage.setItemPrice(result.name, result.site, result.price).
+				then();
+
+				if (minPrices[result.name] !== undefined) {
+					if (result.price < minPrices[result.name]) {
+						console.log("CHEAP DEAL! " + result.name + " is only " + result.price + " at " + result.site);
+					}
+				}
+			}
+		}
+	});
+
+});

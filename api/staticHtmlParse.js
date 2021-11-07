@@ -16,7 +16,7 @@ const staticHtmlParse = function(name, site, url, pattern) {
       };
     })
     .catch(function(err) {
-      console.log('An error occurred downloading the page');
+      console.log('An error occurred downloading the page: ' + url);
       return null;
     });
 };
