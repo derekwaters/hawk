@@ -198,6 +198,7 @@ var api = {
 
 					outerResolve({
 						'minPrices' : minPrices,
+						'latestPrices' : values,
 						'alerts' : cheapDeals
 					});
 				});
